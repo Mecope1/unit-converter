@@ -10,99 +10,17 @@ Version = 0.3
 """
 
 from tkinter import messagebox, Tk, END, Button, Frame, E, W, TOP, Y,StringVar, Entry, Label, Listbox, LEFT,\
-    Scrollbar, RIGHT, BOTTOM, Text
-from collections import namedtuple
-from collections import OrderedDict
-"""
- Creates a namedtuple to use with the temperature conversions. This is done because the conversion process
-   usually isn't just a single operation. Using two dictionaries had been necessary, before introducing this
-   method, due to the conversion paradigm. The namedtuple allows a normal dictionary to hold two related
-   elements in one value space, so that either the forward or reverse conversion equation can be used.
-"""
-Conversion = namedtuple('Conversion', ('forward', 'inverse'))
+    Scrollbar, RIGHT, BOTTOM
 
-# List of SI prefixes that can be used to modify the given or desired units.
-prefix_modifiers = OrderedDict()
-prefix_modifiers['G'] = 1e9
-prefix_modifiers['M'] = 1e6
-prefix_modifiers['k'] = 1e3
-prefix_modifiers[''] = 1e0
-prefix_modifiers['c'] = 1e-2
-prefix_modifiers['m'] = 1e-3
-prefix_modifiers['μ'] = 1e-6
-prefix_modifiers['n'] = 1e-9
-
-"""
- The conversion paradigm is that any conversion is carried out through a common or base unit. This means that every
-   conversion must convert to it, if the base unit is not already the given or desired unit.
-                       EX: inches -> ft is actually, inches -> meters -> feet.
-
- Should any additional units be added, the conversion number listed must be the factor to convert from the base unit to
-   the new unit. This is true for all cases, except new temperature units.
-                       EX: Adding inches meant using the conversion factor from meters to inches (39.3701)
-"""
-
-
-# Meter is base unit of conversion.
-length_conversions = {
-    "m": 1.0,
-    "mi": 0.000621371,
-    "in": 39.3701,
-    "ft": 3.28084
-}
-
-
-# psi is base unit of conversion
-pressure_conversions = {
-    "psi": 1.0,
-    "Pa": 6894.76,
-    "atm": 0.068046,
-    "bar": 0.0689476,
-    "mmHg": 51.71484,
-    "inH2O": 27.7076
-}
-
-"""
- The conversion paradigm for temperature is similar to the other units in that it is carried out through a base unit.
-   However, because it requires an equation beyond a single operation, the inverse equation must be defined to allow
-   conversion to and from the base unit.
-                       EX A: From celsius to fahrenheit is (9*x/5) + 32, where x is the temperature in celsius.
-                       EX B: From fahrenheit to celsius is (x-32)*(5/9)), where x is the temperature in fahrenheit.
-"""
-
-
-# Celsius is the base unit for conversion
-temp_conversions = {
-    "deg C": Conversion(lambda x: x, lambda x: x),
-    "deg F": Conversion(lambda x: (9*x/5) + 32, lambda x: (x-32)*(5/9)),
-    "K": Conversion(lambda x: x+273.15, lambda x: x-273.15),
-    "R": Conversion(lambda x: ((9*x/5) + 491.67), lambda x: (x-491.67)*(5/9))
-}
-
-
-# Joule is base unit of conversion
-energy_conversions = {
-    "J": 1.0,
-    "gram cal": 0.239006,
-    "BTU": 0.000947817,
-}
-
-
-# Kilogram is base unit of conversion
-mass_conversions = {
-    "g": 1000,
-    "oz": 35.274,
-    "lb": 2.20462,
-    "ton": 0.00110231
-}
-
+from conversions import prefix_modifiers, length_conversions, pressure_conversions, temp_conversions, \
+    energy_conversions, mass_conversions, convert_units
 
 # Holds the selected units for the conversion
 current_state = {}
 
 
 # Determines correct conversion dictionary using the collected units. Also provides prefixes for the conversion process.
-def converter(state):
+def do_conversion(state):
     u1 = state.get('selected_unit1')
     u2 = state.get('selected_unit2')
     u1_prefix = state.get('selected_prefix1')
@@ -110,51 +28,35 @@ def converter(state):
 
 # Checks to see if given and desired units have been selected. Then checks to see which conversion dictionary is needed.
     if u1 is not None and u2 is not None:
-        if u1 in length_conversions:
-            do_conversion(u1, u2, length_conversions, u1_prefix, u2_prefix)
-            # length_converter(state.get('selected_unit1'), state.get('selected_unit2'))
+        try:
+            current_value = float(entry_value1.get())
+        except ValueError:
+            messagebox.showerror("Non-numeric value", "Numeric values required!")
+            return
 
-        elif u1 in pressure_conversions:
-            do_conversion(u1, u2, pressure_conversions, u1_prefix, u2_prefix)
-
-        elif u1 in temp_conversions:
-            do_conversion(u1, u2, temp_conversions, u1_prefix, u2_prefix)
-
-        elif u1 in energy_conversions:
-            do_conversion(u1, u2, energy_conversions, u1_prefix, u2_prefix)
-
-        elif u1 in mass_conversions:
-            do_conversion(u1, u2, mass_conversions, u1_prefix, u2_prefix)
-
+        result = convert_units(
+            current_value, u1, u2, current_state['conversion_map'], unit1_prefix=u1_prefix, unit2_prefix=u2_prefix
+        )
+        e2.delete(0, END)
+        e2.insert(END, "{0:e}".format(result))
     else:
         messagebox.showerror("Unit Required", "No unit selected, but units are required.")
+        # Function that grabs the unit for the given value from the user's selection.
 
 
-# This function handles the actual work of converting the units. It handles temperature conversions separately from the
-#   other types due to the use of a namedtuple to hold both equations.
-def do_conversion(unit1, unit2, conversions, unit1_prefix=None, unit2_prefix=None):
+def handle_unit_selection(event, state_key, state_prefix_key, unit_var):
     try:
-        current_value = float(entry_value1.get())
-    except ValueError:
-        messagebox.showerror("Non-numeric value", "Numeric values required!")
-        return
+        index = units_list1.curselection()[0]
+        current_state[state_key] = units_list1.get(index)
+        if current_state[state_prefix_key] is None:
+            prefix = ""
+        else:
+            prefix = current_state[state_prefix_key]
+        # Resets given units label
+        unit_var.set(prefix + current_state[state_key])
 
-    unit1_conversion = conversions[unit1]
-    unit2_conversion = conversions[unit2]
-
-    if unit1_prefix is not None:
-        current_value *= prefix_modifiers[unit1_prefix]
-    if isinstance(unit1_conversion, (float, int)):
-        current_value = (current_value / unit1_conversion) * unit2_conversion
-
-    elif isinstance(unit1_conversion, Conversion):
-        current_value = unit2_conversion.forward(unit1_conversion.inverse(current_value))
-    else:
-        return
-    if unit2_prefix is not None:
-        current_value /= prefix_modifiers[unit2_prefix]
-    e2.delete(0, END)
-    e2.insert(END, "{0:e}".format(current_value))
+    except IndexError:
+        pass
 
 
 # Function that grabs the unit for the given value from the user's selection.
@@ -263,6 +165,7 @@ def set_units_command2(conversions, prefixes):
     current_state['selected_unit1'] = None
     current_state['selected_prefix2'] = None
     current_state['selected_unit2'] = None
+    current_state['conversion_map'] = conversions
 # Label on GUI is reset to show that there are no selected units or prefixes.
     g_units.set("???")
     d_units.set("???")
@@ -406,7 +309,7 @@ l2 = Label(bottom_frame, textvariable=d_units, anchor=W)
 l2.grid(row=1, column=19)
 
 # Conversion button along with code to make the color change when the button is being hovered over by the mouse pointer.
-b6 = Button(bottom_frame, text="Convert", width=5, command=lambda: converter(current_state), bg='#4295f4')
+b6 = Button(bottom_frame, text="Convert", width=5, command=lambda: do_conversion(current_state), bg='#4295f4')
 b6.bind("<Enter>", set_color_closure_creator(b6, "#64ABFD"))
 b6.bind("<Leave>", set_color_closure_creator(b6, "#4295f4"))
 b6.grid(row=2, column=18, columnspan=2)
@@ -416,6 +319,7 @@ bottom_frame.pack(side=BOTTOM, fill=Y)
 
 # Binds the listboxes to allow the contents to be selected and held so that the contents can be used.
 prefix_list1.bind("<<ListboxSelect>>", get_selected_prefix1)
+# lambda event: handle_unit_selection(event, 'selected_unit1', 'selected_prefix1', g_units)
 units_list1.bind("<<ListboxSelect>>", get_selected_unit1)
 prefix_list2.bind("<<ListboxSelect>>", get_selected_prefix2)
 units_list2.bind("<<ListboxSelect>>", get_selected_unit2)
