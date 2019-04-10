@@ -1,1 +1,1 @@
-web: ./run_webapp -p $PORT
+web: python3 run_webapp.py -p $PORT
