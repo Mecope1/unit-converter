@@ -1,9 +1,9 @@
 from flask import Blueprint
 from flask_restplus import Resource, Api, fields
-from conversions import conversion_maps, prefix_modifiers, convert_units, ConversionException
+from conversions import conversion_maps, prefix_modifiers, convert_units, ConversionException, __version__
 
 api_blueprint = Blueprint('api', __name__, url_prefix="/api/1.0")
-api = Api(api_blueprint, version="1.0", title="Simple Unit Converter")
+api = Api(api_blueprint, version=__version__, title="Simple Unit Converter")
 
 
 conversion = api.model(

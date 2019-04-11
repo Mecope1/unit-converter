@@ -1,3 +1,5 @@
+__version__ = "0.4.0"
+
 from collections import namedtuple, OrderedDict
 
 """
@@ -79,13 +81,23 @@ mass_conversions = {
     "ton": 0.00110231
 }
 
+time_conversions = {
+    's': 1.0,
+    'min': 1.0/60.0,
+    'hr': 1.0/3600.0,
+    'day': 1.0/(3600*24.0),
+    'week': 1.0/(3600*24.0*7),
+    'month': 1.0/(3600*24.0*30),
+    'year':  1.0/(3600*24*365)
+}
 
 conversion_maps = {
     'length': length_conversions,
     'pressure': pressure_conversions,
     'temp': temp_conversions,
     'energy': energy_conversions,
-    'mass': mass_conversions
+    'mass': mass_conversions,
+    'time': time_conversions
 }
 
 
@@ -134,8 +146,8 @@ def convert_units(initial_value, unit1, unit2, conversion_map, unit1_prefix=None
         current_value = (current_value / unit1_conversion) * unit2_conversion
 
     elif isinstance(unit1_conversion, Conversion):
-        current_value = initial_value*prefix_modifiers.get(unit1_prefix)
-        current_value = unit2_conversion.forward(unit1_conversion.inverse(current_value))/prefix_modifiers.get(unit2_prefix)
+        current_value = initial_value*prefix_modifiers.get(unit1_prefix, 1.0)
+        current_value = unit2_conversion.forward(unit1_conversion.inverse(current_value))/prefix_modifiers.get(unit2_prefix, 1.0)
     else:
         assert False
     # if unit2_prefix is not None:

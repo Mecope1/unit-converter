@@ -8,14 +8,15 @@
         <script src="/static/js/conversion.js"></script>
         <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="/static/css/conversion.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.2/gh-fork-ribbon.min.css" />
         <script>
-
+        conversionSetup({{ json.dumps(unit_map) }}, {{ defaults }});
         </script>
         <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"> -->
     </head>
     <body>
 
-
+        <a class="github-fork-ribbon" href="https://github.com/Mecope1/unit-converter" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 vcentered">
@@ -30,12 +31,16 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <form action="/convert" oninput="x.value=parseInt(a.value)+parseInt(b.value)" method="POST">
+                    <form action="/convert" method="POST">
 
                         <div class="btn-group">
                             {% for unit_type in unit_types %}
-                            <button type="button" class="btn btn-primary" data-toggle="button" value="{{ unit_type }}">{{ unit_type.capitalize() }}</button>
+                            <button type="button" id="btn-{{ unit_type }}" class="btn btn-primary unit-type-button" value="{{ unit_type }}">{{ unit_type.capitalize() }}</button>
                             {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" id="unit_type_input" name="unit_type" hidden required>
                         </div>
 
                         <div class="form-group">
@@ -47,9 +52,8 @@
                         <div class="form-group">
                             <label for="given_prefix">Given Prefixes:</label>
                             <select class="form-control" id="given_prefix" name="given_prefix" required>
-                                <option value="" selected disabled>Select a prefix</option>
                                 {% for prefix in prefix_types %}
-                                <option value="{{ prefix }}">{{ prefix }}</option>
+                                <option id="prefix-given-{{ prefix }}" value="{{ prefix }}" {% if not prefix %}selected{% endif %}>{{ prefix }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -58,19 +62,14 @@
                             <label for="given_unit">Given Units</label>
                             <select class="form-control" id="given_unit" name="given_unit" required>
                                 <option value="" selected disabled>Select a unit</option>
-                                <option>m</option>
-                                <option>mi</option>
-                                <option>in</option>
-                                <option>ft</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="desired_prefix">Given Prefixes</label>
+                            <label for="desired_prefix">Desired Prefixes</label>
                             <select class="form-control" id="desired_prefix" name="desired_prefix" required>
-                                <option value="" selected disabled>Select a prefix</option>
                                 {% for prefix in prefix_types %}
-                                <option value="{{ prefix }}">{{ prefix }}</option>
+                                <option id="prefix-desired-{{ prefix }}" value="{{ prefix }}" {% if not prefix %}selected{% endif %}>{{ prefix }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -78,22 +77,27 @@
                         <div class="form-group">
                             <label for="desired_unit">Desired Units</label>
                             <select class="form-control" id="desired_unit" name="desired_unit" required>
-                                <option value="" selected disabled>Select a Unit</option>
-                                <option>m</option>
-                                <option>mi</option>
-                                <option>in</option>
-                                <option>ft</option>
+                                <option value="" selected disabled>Select a unit</option>
                             </select>
                         </div>
 
 
                         <div>
-                            <button type="submit">Convert!</button>
+                            <button type="submit" class="btn btn-danger">Convert!</button>
                         </div>
                     </form>
                 </div>
             </div>
-
+            <div class="row" style="padding-top: 2em">
+                <div class="col-lg-12">
+                    <h3>Result: {{ result }}</h3>
+                </div>
+            </div>
+            <div class="row" style="padding-top: 2em">
+                <div class="col-lg-12">
+                    <p>Unit Converter {{ version }} by <a href="https://github.com/Mecope1">Michael Cope</a> (2019)</p>
+                </div>
+            </div>
         </div>
     </body>
 </html>

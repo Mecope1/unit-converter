@@ -6,14 +6,14 @@ Length, Pressure, Temperature, Energy, Mass
 
 User can convert related units.
 EX: kilogram -> ton
-Version = 0.3
+Version = 0.4
 """
 
 from tkinter import messagebox, Tk, END, Button, Frame, E, W, TOP, Y,StringVar, Entry, Label, Listbox, LEFT,\
     Scrollbar, RIGHT, BOTTOM
 
 from conversions import prefix_modifiers, length_conversions, pressure_conversions, temp_conversions, \
-    energy_conversions, mass_conversions, convert_units
+    energy_conversions, mass_conversions, convert_units, __version__
 
 # Holds the selected units for the conversion
 current_state = {}
@@ -106,6 +106,7 @@ def get_selected_unit2(event):
     except IndexError:
         pass
 
+
 # Function that grabs the desired prefix from the user's selection.
 def get_selected_prefix2(event):
     try:
@@ -173,7 +174,7 @@ def set_units_command2(conversions, prefixes):
 
 # Defines a message to be displayed when the "About" button is pressed.
 def about_prog():
-    messagebox.showinfo("GUI Unit Converter", """
+    messagebox.showinfo("GUI Unit Converter ({v})".format(v=__version__), """
 This program was originally written by Michael Cope in March 2019.
 It will convert many types of units and display up to 4 digits past the decimal point.
 WARNING: Error propagation not appropriately performed. Values given may not have accurate significant digits. Use only for rough calculations.""")
