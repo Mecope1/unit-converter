@@ -58,7 +58,7 @@ pressure_conversions = {
                        EX A: From celsius to fahrenheit is (9*x/5) + 32, where x is the temperature in celsius.
                        EX B: From fahrenheit to celsius is (x-32)*(5/9)), where x is the temperature in fahrenheit.
 """
-# Celsius is the base unit for conversionx
+# Celsius is the base unit for conversion
 temp_conversions = {
     "deg C": Conversion(lambda x: x, lambda x: x),
     "deg F": Conversion(lambda x: (9*x/5) + 32, lambda x: (x-32)*(5/9)),

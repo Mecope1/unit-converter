@@ -1,5 +1,5 @@
 assertpy
 flask
-flask-restplus
+flask-restx
 cheroot
 wsgi-request-logger

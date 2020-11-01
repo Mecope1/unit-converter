@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_restplus import Resource, Api, fields
+from flask_restx import Resource, Api, fields
 from conversions import conversion_maps, prefix_modifiers, convert_units, ConversionException, __version__
 
 api_blueprint = Blueprint('api', __name__, url_prefix="/api/1.0")
@@ -9,12 +9,12 @@ api = Api(api_blueprint, version=__version__, title="Simple Unit Converter")
 conversion = api.model(
     "Conversion",
     {
-        "init_value": fields.Float(description="The input value"),
-        "unit1": fields.String(description="The input units"),
-        "unit2": fields.String(description="The output units"),
-        "unit_type": fields.String(description="The unit type to convert", enum=list(conversion_maps.keys())),
-        "prefix1": fields.String(description="The scientific prefix for the input", enum=list(prefix_modifiers.keys())),
-        "prefix2": fields.String(description="The scientific prefix for the output", enum=list(prefix_modifiers.keys()))
+        "init_value": fields.Float(description="The input value", example=13.5),
+        "unit1": fields.String(description="The input units", example="Pa"),
+        "unit2": fields.String(description="The output units", example="bar"),
+        "unit_type": fields.String(description="The unit type to convert", enum=list(conversion_maps.keys()), example="pressure"),
+        "prefix1": fields.String(description="The scientific prefix for the input", enum=list(prefix_modifiers.keys()), example="k"),
+        "prefix2": fields.String(description="The scientific prefix for the output", enum=list(prefix_modifiers.keys()), example="m")
      }
 )
 
